@@ -14,7 +14,7 @@ import re
 import sys
 import urllib.error
 import urllib.request
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 USER_AGENT = (
@@ -75,7 +75,17 @@ def _find_key(obj: object, key: str) -> object | None:
 
 
 def format_timestamp(ts: int, timezone: str) -> str:
-    tz = ZoneInfo(timezone)
+    try:
+        tz = ZoneInfo(timezone)
+    except ZoneInfoNotFoundError as exc:
+        if timezone == "Asia/Ho_Chi_Minh":
+            tz = dt.timezone(dt.timedelta(hours=7), name="UTC+07")
+        else:
+            raise ValueError(
+                f"Múi giờ không hợp lệ hoặc thiếu dữ liệu timezone: {timezone}. "
+                "Nếu dùng Windows, hãy cài thêm gói tzdata (pip install tzdata)."
+            ) from exc
+
     dt_obj = dt.datetime.fromtimestamp(ts, tz=tz)
     return dt_obj.strftime("%Y-%m-%d %H:%M:%S %Z")
 
