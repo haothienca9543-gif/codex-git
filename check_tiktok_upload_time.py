@@ -84,7 +84,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Kiểm tra thời gian đăng tải video TikTok từ URL công khai."
     )
-    parser.add_argument("url", help="URL video TikTok")
+    parser.add_argument(
+        "url",
+        nargs="?",
+        help="URL video TikTok (có thể bỏ qua để nhập thủ công)",
+    )
     parser.add_argument(
         "--timezone",
         default="Asia/Ho_Chi_Minh",
@@ -95,9 +99,17 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    url = args.url
+
+    if not url:
+        url = input("Nhập URL video TikTok: ").strip()
+
+    if not url:
+        print("Bạn chưa nhập URL video TikTok.", file=sys.stderr)
+        return 1
 
     try:
-        html = fetch_html(args.url)
+        html = fetch_html(url)
         create_time = extract_create_time(html)
         pretty_time = format_timestamp(create_time, args.timezone)
     except urllib.error.HTTPError as exc:
